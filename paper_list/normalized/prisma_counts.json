@@ -1,0 +1,45 @@
+{
+  "identified_raw_total": 152,
+  "after_dedup": 148,
+  "auto_screen_in": 83,
+  "auto_screen_out": 65,
+  "notes": {
+    "strict_require_rl": false,
+    "mv_terms": [
+      "mechanical ventilation",
+      "ventilator",
+      "ventilatory support",
+      "ventilation",
+      "ventilated",
+      "patient-ventilator"
+    ],
+    "weaning_terms": [
+      "wean",
+      "weaning",
+      "extubat",
+      "ventilator liberation",
+      "spontaneous breathing trial",
+      "sbt",
+      "liberation"
+    ],
+    "rl_terms": [
+      "reinforcement learning",
+      "\\bMDP\\b",
+      "markov decision",
+      "\\bQ-?learning\\b",
+      "fitted q",
+      "policy gradient",
+      "actor-critic",
+      "offline reinforcement",
+      "deep reinforcement",
+      "inverse reinforcement"
+    ]
+  },
+  "abstract_stage": {
+    "checked": 83,
+    "kept": 82,
+    "dropped_by_abstract": 1,
+    "no_abstract": 81
+  },
+  "auto_screen_in_after_abstract": 82
+}

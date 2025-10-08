@@ -1,0 +1,11 @@
+{
+  "term": "((\"reinforcement learning\"[tiab] OR \"inverse reinforcement\"[tiab] OR \"markov decision\"[tiab] OR MDP[tiab] OR \"Q-learning\"[tiab] OR \"fitted Q\"[tiab] OR \"policy gradient\"[tiab] OR \"offline reinforcement\"[tiab] OR \"deep reinforcement\"[tiab])) AND ((\"mechanical ventilation\"[tiab] OR ventilator[tiab] OR \"ventilatory support\"[tiab])) AND ((wean*[tiab] OR extubat*[tiab] OR \"ventilator liberation\"[tiab] OR \"spontaneous breathing trial\"[tiab] OR SBT[tiab]))",
+  "pages_fetched": 1,
+  "total_reported": 3,
+  "total_pmids_concat": 3,
+  "pmids": [
+    "40568522",
+    "40126961",
+    "30961594"
+  ]
+}
