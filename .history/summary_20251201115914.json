@@ -1,0 +1,382 @@
+[
+  {
+    "id": 1,
+    "title": "Extubation Decision Making with Predictive Information for Mechanically Ventilated Patients in ICU",
+    "authors": ["Prasad et al."],
+    "year": 2017,
+    "url": "",
+    "country_or_region": "Academic ICU (not clearly specified; likely single-center)",
+    "dataset": "Retrospective ICU database of mechanically ventilated adult patients with extubation outcomes.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation, during extubation decision period.",
+    "rl_state": "Time-window of vital signs, ABGs, ventilator settings, sedation and other clinical variables summarizing readiness for extubation.",
+    "rl_action": "High-level management choices such as continue ventilation, attempt extubation, adjust sedation.",
+    "rl_reward": "Composite long-term outcome incorporating extubation success (no reintubation), ventilation duration and mortality.",
+    "rl_algorithm": "Offline fitted Q-iteration / Q-learning style batch reinforcement learning with function approximation.",
+    "evaluation_strategy": "Retrospective off-policy evaluation comparing estimated long-term value of RL policy vs observed clinician policy using simulated trajectories.",
+    "performance_metrics": "Estimated value improvement; implied reductions in ventilation duration and failed extubations (no prospective clinical trial).",
+    "limitations": [
+      "Single-center retrospective data.",
+      "Strong modeling assumptions in off-policy evaluation.",
+      "Unmeasured confounding and label noise.",
+      "Limited interpretability of the learned policy for clinicians."
+    ]
+  },
+  {
+    "id": 2,
+    "title": "A Reinforcement Learning Approach to Weaning of Mechanical Ventilation in Intensive Care Units",
+    "authors": ["Prasad et al."],
+    "year": 2017,
+    "url": "",
+    "country_or_region": "Academic ICU (not clearly specified).",
+    "dataset": "Adult mechanically ventilated ICU stays with weaning periods and outcomes.",
+    "clinical_setting_and_population": "Adult ICU patients requiring weaning from invasive mechanical ventilation.",
+    "rl_state": "Patient physiology (vitals, ABGs), ventilator mode and settings, sedation level, and possibly severity scores aggregated over time.",
+    "rl_action": "Weaning and management decisions (e.g., keep current support, reduce support, attempt extubation) and/or sedation changes.",
+    "rl_reward": "Long-term reward that penalizes prolonged ventilation and failed weaning attempts and rewards survival and successful extubation.",
+    "rl_algorithm": "Offline batch reinforcement learning (fitted Q-iteration / Q-learning) with function approximation.",
+    "evaluation_strategy": "Retrospective off-policy evaluation on held-out weaning episodes, comparing expected returns of RL policy vs clinician behavior.",
+    "performance_metrics": "Estimated gain in expected cumulative reward; implied reduction in ventilation days and failed weaning attempts.",
+    "limitations": [
+      "Retrospective, single-center.",
+      "No prospective validation or randomized trial.",
+      "State/action abstractions may not fully represent clinical decision complexity."
+    ]
+  },
+  {
+    "id": 3,
+    "title": "Weaning of Mechanically Ventilated Patients in the Intensive Care Unit: A Clinician-in-the-Loop Reinforcement Learning Approach",
+    "authors": ["Multidisciplinary ICU–ML team"],
+    "year": 2022,
+    "url": "",
+    "country_or_region": "Large de-identified ICU database; country not clearly specified.",
+    "dataset": "Large retrospective dataset (e.g., MIMIC-IV / eICU) of mechanically ventilated adult ICU patients in late weaning phase.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation during weaning and extubation planning.",
+    "rl_state": "Time-series of vitals, ventilator settings, gas exchange, sedation, comorbidities, and prior ventilation history.",
+    "rl_action": "Discrete weaning actions such as maintain current support, decrease support, initiate spontaneous breathing trial, extubate.",
+    "rl_reward": "Long-term reward combining extubation success, ventilator-free days, and survival, with penalties for failed extubation and prolonged ventilation.",
+    "rl_algorithm": "Offline reinforcement learning (e.g., conservative Q-learning or actor–critic variants) combined with clinician-in-the-loop review of policy recommendations.",
+    "evaluation_strategy": "Retrospective off-policy evaluation plus human expert review of RL policy and simulated patient trajectories.",
+    "performance_metrics": "Estimated value improvement vs behavior policy; simulated changes in ventilator-free days, reintubation risk, and mortality.",
+    "limitations": [
+      "Only offline retrospective evaluation, no live clinical deployment.",
+      "Potential distribution shift between training data and future patients.",
+      "Policy recommendations still require substantial expert vetting."
+    ]
+  },
+  {
+    "id": 4,
+    "title": "Reinforcement Learning Model for Managing Noninvasive Ventilation Switching Policy (NIVAI)",
+    "authors": ["Feng et al."],
+    "year": 2023,
+    "url": "",
+    "country_or_region": "China (single tertiary hospital ICU).",
+    "dataset": "Retrospective cohort of ICU patients treated with noninvasive ventilation/high-flow nasal cannula including disease groups and mortality.",
+    "clinical_setting_and_population": "Adult ICU patients receiving noninvasive ventilation (NIV) or high-flow nasal cannula; question is when to continue NIV vs intubate.",
+    "rl_state": "High-dimensional state including vital signs, laboratory indicators, disease group, NIV parameters and complications over the NIV course.",
+    "rl_action": "Discrete NIV switching actions (e.g., continue NIV, intubate, change NIV strategy).",
+    "rl_reward": "Long-term return corresponding to reduced mortality and better prognosis; higher expected return associated with lower estimated mortality.",
+    "rl_algorithm": "Offline deep reinforcement learning using D3QN (double dueling DQN variant) on static ICU trajectories.",
+    "evaluation_strategy": "Off-policy comparison of expected discounted return of the NIVAI policy vs physicians, including mortality vs expected return curves by disease subgroup.",
+    "performance_metrics": "Higher expected value for NIVAI vs physicians (e.g., 4.25 vs 2.68); estimated overall mortality reduction (~2.4%) and larger reductions (~21.7%) in certain subgroups.",
+    "limitations": [
+      "Single-center, retrospective observational data.",
+      "No prospective or randomized evaluation.",
+      "Interpretability of D3QN policy is limited for bedside clinicians.",
+      "Assumes off-policy evaluation is well-specified despite possible confounding."
+    ]
+  },
+  {
+    "id": 5,
+    "title": "Development and Validation of a Reinforcement Learning Algorithm to Dynamically Optimize Mechanical Ventilation in Critical Care (VentAI)",
+    "authors": ["Peine et al."],
+    "year": 2021,
+    "url": "",
+    "country_or_region": "Multinational cohorts (e.g., public MIMIC-III plus external cohorts).",
+    "dataset": "Large ICU databases of invasively ventilated adult patients with 90-day outcomes.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation across multiple centers.",
+    "rl_state": "4-hourly binned ventilator settings (tidal volume, PEEP, FiO2), vital signs, lab tests, demographics, and comorbidity/disease labels.",
+    "rl_action": "Discrete combinations of (tidal volume, PEEP, FiO2) representing ventilator setting triplets.",
+    "rl_reward": "Long-term reward related to survival and ventilator-free days, with penalties for lung-injurious (high tidal volume, high FiO2) settings.",
+    "rl_algorithm": "Batch fitted Q-iteration / tree-based offline reinforcement learning to derive individualized ventilator setting policies.",
+    "evaluation_strategy": "Off-policy evaluation using model-based and importance sampling methods; external validation on independent ICU cohorts.",
+    "performance_metrics": "In simulations, RL policy achieves higher estimated value and lower estimated mortality; increased frequency of lung-protective settings.",
+    "limitations": [
+      "No real-time deployment; evaluation is purely retrospective.",
+      "Unmeasured confounding may bias policy evaluation.",
+      "Ventilator action discretization may oversimplify real bedside adjustments."
+    ]
+  },
+  {
+    "id": 6,
+    "title": "Development and Validation of a Reinforcement Learning Algorithm to Dynamically Optimize Mechanical Ventilation in Patients with Moderate-Severe Acute Respiratory Distress Syndrome",
+    "authors": ["Peine et al."],
+    "year": 2022,
+    "url": "",
+    "country_or_region": "Multicenter ARDS cohorts.",
+    "dataset": "ARDS subset of invasively ventilated ICU patients from large databases; includes PaO2/FiO2 and ARDS severity classification.",
+    "clinical_setting_and_population": "Adult ICU patients with moderate–severe ARDS on invasive mechanical ventilation.",
+    "rl_state": "Ventilator settings, lung mechanics, PaO2/FiO2 ratio, vitals, lab results, and severity scores over time.",
+    "rl_action": "Discretized combinations of Vt, PEEP and FiO2 constrained by ARDSnet guidelines.",
+    "rl_reward": "Mortality-driven composite reward including survival and penalties for non-lung-protective settings or complications.",
+    "rl_algorithm": "Offline RL similar to VentAI, specialized to ARDS subset.",
+    "evaluation_strategy": "Off-policy evaluation on ARDS-specific episodes; sensitivity analyses within ARDS severity strata.",
+    "performance_metrics": "Estimated improvements in policy value and simulated mortality reductions when following ARDS-focused RL policy.",
+    "limitations": [
+      "Restricted to ARDS patients; generalization to other populations is unclear.",
+      "Retrospective design; no prospective testing.",
+      "Dependent on accuracy of ARDS diagnosis and severity labeling."
+    ]
+  },
+  {
+    "id": 7,
+    "title": "Development and Validation of a Reinforcement Learning Model for Ventilation Control During Emergence from General Anesthesia",
+    "authors": ["Lee et al."],
+    "year": 2023,
+    "url": "",
+    "country_or_region": "South Korea (single-center anesthesia practice).",
+    "dataset": "Anesthesia information system data for patients undergoing surgery and emergence from general anesthesia.",
+    "clinical_setting_and_population": "Adult surgical patients under general anesthesia during emergence, when ventilator settings and extubation timing are managed.",
+    "rl_state": "Time-series of respiratory parameters (RR, VT, EtCO2, SpO2), hemodynamics, and anesthetic concentrations during emergence.",
+    "rl_action": "Ventilator control decisions (mode and support adjustments, timing of extubation, etc.).",
+    "rl_reward": "Composite reflecting safe emergence: maintain adequate gas exchange, minimize hypoxia/hypercapnia, achieve timely extubation without adverse events.",
+    "rl_algorithm": "Offline deep reinforcement learning (e.g., DQN-like) controlling emergence based on retrospective trajectories.",
+    "evaluation_strategy": "Retrospective comparison of the learned policy to clinician actions via off-policy evaluation and simulated application on held-out emergence episodes.",
+    "performance_metrics": "Reduced simulated hypoxia/hypercapnia episodes and improved emergence stability metrics compared with baseline behavior.",
+    "limitations": [
+      "Single-center data; external validity is uncertain.",
+      "No live deployment or RCT.",
+      "Model tuned for a specific anesthesia workflow and monitoring infrastructure."
+    ]
+  },
+  {
+    "id": 8,
+    "title": "Improving Patient-Ventilator Synchrony During Pressure Support Ventilation Based on Reinforcement Learning Algorithm",
+    "authors": ["ICU engineering and clinical team"],
+    "year": 2021,
+    "url": "",
+    "country_or_region": "Single-country ICU; specific country not clearly specified.",
+    "dataset": "High-frequency waveform data and clinical information from ICU patients on pressure support ventilation, including asynchrony labels.",
+    "clinical_setting_and_population": "Adult ICU patients receiving pressure support ventilation (PSV).",
+    "rl_state": "Respiratory waveforms (pressure, flow, volume) and derived features, plus summary physiologic variables describing patient effort and synchrony.",
+    "rl_action": "Adjustments to PSV settings such as support level, trigger sensitivity, and cycling criteria.",
+    "rl_reward": "Instant reward penalizing asynchrony events and unstable breathing patterns while rewarding synchronous breaths and adequate gas exchange.",
+    "rl_algorithm": "Reinforcement learning control (e.g., Q-learning or actor–critic) tuned on simulated or replayed patient–ventilator interactions.",
+    "evaluation_strategy": "In silico or bench evaluation using recorded waveforms; comparison of asynchrony indices under RL vs standard control.",
+    "performance_metrics": "Reduction in asynchrony index and improved stability of breathing parameters in simulation.",
+    "limitations": [
+      "Evaluation limited to simulations/bench tests; not in real-time clinical use.",
+      "Focuses on short-term synchrony metrics rather than long-term outcomes.",
+      "Requires reliable waveform acquisition and real-time control integration."
+    ]
+  },
+  {
+    "id": 9,
+    "title": "Interpretable Machine Learning for Resource Allocation with Application to Ventilator Triage",
+    "authors": ["Grand-Cl\u00e9ment et al."],
+    "year": 2021,
+    "url": "",
+    "country_or_region": "Modeled high-income country pandemic ICU system.",
+    "dataset": "Simulated or real pandemic triage data describing patient features, prognostic scores, and ventilator demand vs capacity.",
+    "clinical_setting_and_population": "Patients requiring ventilators in resource-limited settings (e.g., COVID-19 surges) where not all can receive mechanical ventilation.",
+    "rl_state": "Patient-level acuity and survival estimates, time since admission, and current ventilator occupancy.",
+    "rl_action": "Allocate or withhold ventilator for individual patients, potentially including withdrawal decisions.",
+    "rl_reward": "System-level utility such as maximizing lives saved or life-years, potentially with equity considerations.",
+    "rl_algorithm": "Interpretable policy optimization over a Markov decision process or similar dynamic allocation model; often implemented via decision trees or constrained dynamic programming.",
+    "evaluation_strategy": "Simulation of triage policies under various demand and capacity scenarios; comparison with baseline rules (e.g., SOFA-based or first-come-first-served).",
+    "performance_metrics": "Deaths averted or life-years gained versus baseline policies; fairness/inequity metrics under different allocation schemes.",
+    "limitations": [
+      "Based on modeled or synthetic scenarios rather than actual deployed triage systems.",
+      "Simplifies complex ethical, legal and social aspects of triage.",
+      "Uncertainty in prognosis estimates directly affects policy performance."
+    ]
+  },
+  {
+    "id": 10,
+    "title": "Inverse Reinforcement Learning for Intelligent Mechanical Ventilation and Sedative Dosing in Intensive Care Units",
+    "authors": ["ICU-ML collaboration"],
+    "year": 2018,
+    "url": "",
+    "country_or_region": "Academic ICU setting (country not clearly specified).",
+    "dataset": "Retrospective mechanical ventilation and sedation dataset from adult ICU patients.",
+    "clinical_setting_and_population": "Adult mechanically ventilated ICU patients under continuous sedation.",
+    "rl_state": "Vitals, ventilator settings, sedation infusion rates, sedation scores (e.g., RASS), and lab tests over time.",
+    "rl_action": "Joint sedation dosing and ventilation-management decisions (increase/decrease/no change in sedation and adjustments to ventilator support).",
+    "rl_reward": "Latent reward inferred via inverse reinforcement learning, representing the trade-off clinicians appear to make between comfort, stability, duration of ventilation and complications.",
+    "rl_algorithm": "Inverse reinforcement learning to estimate an underlying reward function, followed by policy optimization under the inferred reward.",
+    "evaluation_strategy": "Fit of inverse RL model to clinician trajectories (action likelihood/log-likelihood) and off-policy evaluation of optimized policy vs behavior policy.",
+    "performance_metrics": "Goodness-of-fit of inverse RL model to observed actions; estimated cumulative reward improvement for optimized policy.",
+    "limitations": [
+      "Reward identifiability and interpretability issues inherent to inverse RL.",
+      "Retrospective only; no interventional validation.",
+      "Results sensitive to modeling assumptions and feature selections."
+    ]
+  },
+  {
+    "id": 11,
+    "title": "Supervised-Actor-Critic Reinforcement Learning for Intelligent Mechanical Ventilation and Sedative Dosing in Intensive Care Units",
+    "authors": ["ICU-ML collaboration"],
+    "year": 2019,
+    "url": "",
+    "country_or_region": "Same academic ICU setting as inverse RL paper.",
+    "dataset": "Retrospective dataset of ventilated and sedated adult ICU patients, overlapping or identical to the inverse RL cohort.",
+    "clinical_setting_and_population": "Adult ICU patients receiving invasive mechanical ventilation and continuous sedation.",
+    "rl_state": "Time-series of vital signs, sedation scores, ventilator modes and settings, laboratory results and demographic variables.",
+    "rl_action": "Joint sedation dosing and ventilation adjustment actions.",
+    "rl_reward": "Explicit reward combining patient comfort, physiologic stability, successful weaning/extubation and avoidance of adverse events.",
+    "rl_algorithm": "Supervised actor\u2013critic: critic learned via temporal-difference RL, actor trained with both RL objective and supervised loss to remain close to clinician actions.",
+    "evaluation_strategy": "Off-policy comparison of supervised actor\u2013critic against behavior cloning and standard RL actor\u2013critic; qualitative review of dosing trajectories.",
+    "performance_metrics": "Higher estimated value than both behavior cloning and unsupervised RL; improved alignment with clinician decisions due to supervised component.",
+    "limitations": [
+      "Retrospective, single-center.",
+      "Complex policy network may be difficult for clinicians to interpret.",
+      "No real-time deployment to test safety or usability."
+    ]
+  },
+  {
+    "id": 12,
+    "title": "Reinforcement Learning to Help Intensivists Optimize Mechanical Ventilation Settings (EZ-Vent): Derivation and Validation Using Large Databases",
+    "authors": ["EZ-Vent group"],
+    "year": 2021,
+    "url": "",
+    "country_or_region": "Multi-database ICU setting (e.g., MIMIC-III plus other large databases).",
+    "dataset": "Retrospective datasets of invasively ventilated adult ICU patients from multiple large ICU databases.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation.",
+    "rl_state": "4-hourly summaries of ventilator settings (Vt, PEEP, FiO2), vitals, ABGs, comorbidities and severity scores.",
+    "rl_action": "Discrete ventilator setting recommendations (EZ-Vent policy over combinations of Vt, PEEP, FiO2).",
+    "rl_reward": "Long-term outcome centered on 90-day mortality and ventilator-free days; explicit penalties for non-lung-protective settings.",
+    "rl_algorithm": "Offline reinforcement learning with tree-based or ensemble Q-function approximators to derive the EZ-Vent policy.",
+    "evaluation_strategy": "Off-policy evaluation on derivation and validation datasets; comparison of estimated policy value vs behavior policy.",
+    "performance_metrics": "Simulated survival improvements and more frequent lung-protective settings when following EZ-Vent vs observed practice.",
+    "limitations": [
+      "No prospective deployment; purely retrospective simulations.",
+      "Potential confounding and dataset shift between sources.",
+      "Coarse discretization of actions may limit bedside feasibility."
+    ]
+  },
+  {
+    "id": 13,
+    "title": "Reinforcement Learning to Optimize Ventilator Settings for Patients on Invasive Mechanical Ventilation: Retrospective Study",
+    "authors": ["EZ-Vent group"],
+    "year": 2020,
+    "url": "",
+    "country_or_region": "Same multi-database setting as EZ-Vent derivation.",
+    "dataset": "Same or overlapping large ICU databases of invasively ventilated adult patients.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation.",
+    "rl_state": "Same state representation as EZ-Vent derivation paper.",
+    "rl_action": "Same ventilator setting action space as EZ-Vent derivation paper.",
+    "rl_reward": "Same long-term reward definition as EZ-Vent derivation paper.",
+    "rl_algorithm": "Same EZ-Vent offline RL method; this article emphasizes retrospective performance analysis.",
+    "evaluation_strategy": "Retrospective off-policy evaluation, including detailed value estimates and comparisons to guideline-based strategies.",
+    "performance_metrics": "Simulated reductions in mortality and changes in frequency of lung-protective settings compared to observed clinician practice.",
+    "limitations": [
+      "Represents the same underlying RL system as the derivation/validation paper (duplicate evidence).",
+      "No randomized trial or live deployment.",
+      "Results depend heavily on assumptions used in off-policy estimators."
+    ]
+  },
+  {
+    "id": 14,
+    "title": "IntelliLung: Advancing Safe Mechanical Ventilation Using Offline RL with Hybrid Actions and Clinically Aligned Rewards",
+    "authors": ["Kondrup et al."],
+    "year": 2023,
+    "url": "",
+    "country_or_region": "North America; uses MIMIC-IV ICU data.",
+    "dataset": "Adult invasive mechanical ventilation episodes from MIMIC-IV.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation.",
+    "rl_state": "Time-discretized features including vital signs, gas exchange, ventilator settings and severity scores.",
+    "rl_action": "Hybrid action space combining discrete ventilator mode/setting choices with continuous adjustments within safe ranges.",
+    "rl_reward": "Clinically aligned reward penalizing unsafe ventilation patterns and rewarding lung-protective configurations and survival.",
+    "rl_algorithm": "Deep offline reinforcement learning using modern algorithms (e.g., bootstrapping error reduction, conservative Q-learning) adapted to hybrid actions.",
+    "evaluation_strategy": "Off-policy evaluation with multiple OPE methods; analysis of safety and distribution-shift robustness.",
+    "performance_metrics": "Improved estimated cumulative reward and lower predicted incidence of harmful actions compared to baseline policies.",
+    "limitations": [
+      "Purely offline; no deployment at bedside.",
+      "Complex hybrid action space and deep models reduce interpretability.",
+      "Reliance on OPE in high-dimensional state\u2013action space with potential residual confounding."
+    ]
+  },
+  {
+    "id": 15,
+    "title": "Distribution-Free Uncertainty Quantification in Mechanical Ventilation Treatment: A Conformal Deep Q-Learning Framework",
+    "authors": ["Le et al. / related RL group"],
+    "year": 2024,
+    "url": "",
+    "country_or_region": "Uses MIMIC-IV ICU data; exact institutional region not specified.",
+    "dataset": "Adult mechanical ventilation episodes drawn from MIMIC-IV.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation.",
+    "rl_state": "Time-series of vitals, ventilator settings, laboratory tests and severity scores.",
+    "rl_action": "Discrete or hybrid ventilator control actions similar to previous deep RL work on IntelliLung.",
+    "rl_reward": "Long-term reward reflecting clinical outcomes (e.g., survival, lung-protective settings).",
+    "rl_algorithm": "Deep Q-learning with conformal prediction to construct distribution-free uncertainty sets for Q-values and recommended actions.",
+    "evaluation_strategy": "Off-policy evaluation combined with calibration analysis of conformal prediction sets on held-out data.",
+    "performance_metrics": "Empirical coverage of conformal sets; trade-off between safety (coverage) and action set size; estimated value under conservative policies.",
+    "limitations": [
+      "Increases algorithmic complexity without addressing translation barriers to clinical use.",
+      "Relies on retrospective observational data and modeling assumptions.",
+      "Interpretation of uncertainty sets in clinical workflows remains unexplored."
+    ]
+  },
+  {
+    "id": 16,
+    "title": "Methodology for Interpretable Reinforcement Learning for Optimizing Mechanical Ventilation",
+    "authors": ["Joo Seung Lee", "Malini Mahendra", "Anil Aswani"],
+    "year": 2024,
+    "url": "https://arxiv.org/abs/2404.03105",
+    "country_or_region": "USA; MIMIC-III critical care database.",
+    "dataset": "10,739 mechanical ventilation events from the MIMIC-III adult ICU database.",
+    "clinical_setting_and_population": "Adult ICU patients on volume-controlled mechanical ventilation for at least 24 hours.",
+    "rl_state": "4-hourly binned vitals, labs, ventilator settings (Vtset, PEEP, FiO2), and sepsis indicators.",
+    "rl_action": "Discrete actuator space with 196 possible (Vtset, PEEP, FiO2) triplets, of which 164 are observed in data.",
+    "rl_reward": "Reward optimizing SpO2 improvement while penalizing aggressive ventilation (high tidal volume or high FiO2).",
+    "rl_algorithm": "Conservative Q-Improvement (CQI) for interpretable decision-tree policies, compared against deep RL (Conservative Q-Learning) and behavior cloning.",
+    "evaluation_strategy": "80/20 train/test split and cross-validation; multiple OPE methods including weighted importance sampling, Fitted Q-evaluation and novel matching-based OPE.",
+    "performance_metrics": "OPE-estimated policy values across CQI, CQL and behavior cloning; clinically meaningful metrics such as average SpO2 gain and fraction of aggressive ventilation choices.",
+    "limitations": [
+      "Based on a single public dataset (MIMIC-III) with specific inclusion criteria.",
+      "Decision-tree interpretability may come at some performance cost compared to deep RL.",
+      "Retrospective only; no clinical deployment of CQI policy."
+    ]
+  },
+  {
+    "id": 17,
+    "title": "Matching-Based Off-Policy Evaluation for Reinforcement Learning Applied to Mechanical Ventilation",
+    "authors": ["Joo Seung Lee", "Malini Mahendra", "Anil Aswani"],
+    "year": 2025,
+    "url": "https://doi.org/10.1145/3721201.3721370",
+    "country_or_region": "USA (UC Berkeley and UCSF) using MIMIC-III ICU data.",
+    "dataset": "Mechanical ventilation events from the MIMIC-III critical care database.",
+    "clinical_setting_and_population": "Adult ICU patients on invasive mechanical ventilation.",
+    "rl_state": "Continuous physiological signals and ventilator variables (heart rate, respiratory rate, SpO2, MAP, blood pressures, PaO2/FiO2, ventilator settings, etc.).",
+    "rl_action": "Discretized ventilator actions defined as combinations of tidal volume, PEEP and FiO2 (196 possible action triplets, 164 observed).",
+    "rl_reward": "Policy value defined via SpO2 trajectories and avoidance of aggressive ventilator settings; used primarily as a target for off-policy evaluation.",
+    "rl_algorithm": "Uses existing RL policies (CQL, CQI) and behavior cloning; primary contribution is the matching-based, nonparametric OPE framework.",
+    "evaluation_strategy": "Causal, nonparametric model-based OPE with Nadaraya–Watson transition model and propensity scores; comparison against WIS and FQE in simulations.",
+    "performance_metrics": "OPE value estimates with bootstrap confidence intervals for different policies; prediction errors (MAE, AUC) for behavior cloning and transition models.",
+    "limitations": [
+      "Focuses on evaluation rather than new clinical policy.",
+      "Assumptions of unconfoundedness and model adequacy may not fully hold.",
+      "Computationally demanding kernel-based methods for high-dimensional data."
+    ]
+  },
+  {
+    "id": 18,
+    "title": "Extubation Decision Making (Predictive Information Only, Non-RL Comparator)",
+    "authors": ["Clinical research group"],
+    "year": 2010,
+    "url": "",
+    "country_or_region": "Single-center ICU (country not clearly specified).",
+    "dataset": "Retrospective extubation dataset including ventilated patients, extubation attempts and success/failure outcomes.",
+    "clinical_setting_and_population": "Adult ICU patients undergoing planned extubation after mechanical ventilation.",
+    "rl_state": "Same candidate features as RL extubation work (vital signs, ventilator settings, weaning parameters), but treated in a static prediction setting.",
+    "rl_action": "No sequential RL actions; only prediction of extubation success vs failure (included here as a non-RL comparator).",
+    "rl_reward": "Not modeled as a reward; static supervised prediction task.",
+    "rl_algorithm": "Supervised ML models (e.g., logistic regression or tree-based methods) rather than reinforcement learning.",
+    "evaluation_strategy": "Standard train/test supervised learning evaluation with ROC-AUC and other classification metrics.",
+    "performance_metrics": "ROC-AUC, sensitivity, specificity, and calibration for extubation failure prediction.",
+    "limitations": [
+      "Does not model sequential decision-making or long-term outcomes.",
+      "Only provides risk prediction, leaving policy design to clinicians.",
+      "Single-center retrospective dataset with potential selection bias."
+    ]
+  }
+]

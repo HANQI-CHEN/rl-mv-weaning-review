@@ -2,10 +2,11 @@ import requests, time, os, json
 import xml.etree.ElementTree as ET
 from pathlib import Path
 from dotenv import load_dotenv
+import math
 
 load_dotenv()
 
-# ---------- setup: ensure output folder ----------
+# ---------- setup: ensure output folder and helper functions ----------
 BASE_DIR = Path("paper_list")
 RAW_DIR = BASE_DIR / "raw"
 RAW_DIR.mkdir(parents=True, exist_ok=True)
@@ -22,11 +23,66 @@ def save_text(path, text):
         f.write(text)
     print(f"Saved → {out_path}")
 
+def get_with_retry(
+    url,
+    headers=None,
+    params=None,
+    timeout=30,
+    max_retries=10,
+    base_sleep=10,
+):
+    """
+    Wrapper around requests.get that:
+      - Retries on HTTP 429 (Too Many Requests)
+      - Respects Retry-After header when present
+      - Raises on 401/403 so credential issues are obvious
+    """
+    for attempt in range(max_retries):
+        r = requests.get(url, headers=headers, params=params, timeout=timeout)
+
+        # Handle rate limiting explicitly
+        if r.status_code == 429:
+            retry_after = r.headers.get("Retry-After")
+            if retry_after is not None:
+                try:
+                    sleep_sec = int(retry_after)
+                except ValueError:
+                    sleep_sec = base_sleep
+            else:
+                # simple linear backoff
+                sleep_sec = base_sleep * (attempt + 1)
+            print(f"[429] Too Many Requests for {url}. Sleeping {sleep_sec}s (attempt {attempt+1}/{max_retries})")
+            time.sleep(sleep_sec)
+            continue
+
+        # Explicitly surface auth/entitlement issues
+        if r.status_code in (401, 403):
+            raise RuntimeError(f"Auth/entitlement issue {r.status_code} for {url}: {r.text[:200]}")
+
+        # Other errors -> let raise_for_status handle
+        r.raise_for_status()
+        return r
+
+    raise RuntimeError(f"Too many 429 responses for {url}, giving up after {max_retries} retries.")
+
 # -------------------- PubMed ------------------------------------------------------------
-RL = '("reinforcement learning"[tiab] OR "inverse reinforcement"[tiab] OR "markov decision"[tiab] OR MDP[tiab] OR "Q-learning"[tiab] OR "fitted Q"[tiab] OR "policy gradient"[tiab] OR "offline reinforcement"[tiab] OR "deep reinforcement"[tiab])'
+# Expanded RL block to include more methods (DQN, PPO, etc.) and concepts (Sequential Decision, Adaptive Control)
+RL = (
+    # Core Concepts and Synonyms
+    '("reinforcement learning"[tiab] OR "inverse reinforcement"[tiab] OR "sequential decision"[tiab] OR "adaptive control"[tiab] OR "control policy"[tiab])'
+    # Core Methods/Algorithms (Q-Learning, Policy Gradient, etc.)
+    ' OR ("Q-learning"[tiab] OR "fitted Q"[tiab] OR "policy gradient"[tiab] OR "value iteration"[tiab] OR "monte carlo tree search"[tiab] OR MCTS[tiab])'
+    # Deep Learning Integration
+    ' OR ("deep reinforcement"[tiab] OR DQN[tiab] OR "deep Q"[tiab] OR A2C[tiab] OR A3C[tiab] OR PPO[tiab] OR DDPG[tiab] OR SAC[tiab] OR TRPO[tiab])'
+    # Markov Process Formalism
+    ' OR ("markov decision process"[tiab] OR "markov decision"[tiab] OR MDP[tiab])'
+    # Types of RL (Offline, Batch, etc.)
+    ' OR ("offline reinforcement"[tiab] OR "batch reinforcement"[tiab] OR "off-policy"[tiab] OR "on-policy"[tiab])'
+)
 MV = '("mechanical ventilation"[tiab] OR ventilator[tiab] OR "ventilatory support"[tiab])'
 WEAN = '(wean*[tiab] OR extubat*[tiab] OR "ventilator liberation"[tiab] OR "spontaneous breathing trial"[tiab] OR SBT[tiab])'
 term = f"({RL}) AND ({MV}) AND ({WEAN})"
+print("PubMed Search Term:\n", term)  # Print the final expanded search term
 
 try:
     url = "https://eutils.ncbi.nlm.nih.gov/entrez/eutils/esearch.fcgi"
@@ -64,7 +120,12 @@ except Exception as e:
 
 # -------------------- OpenAlex ------------------------------------------------------------
 try:
-    search = '"reinforcement learning" "mechanical ventilation" (wean OR extubat OR "spontaneous breathing trial")'
+    # Expanded OpenAlex search to include key RL acronyms for robustness
+    search = ('("reinforcement learning" OR "Q-learning" OR PPO OR DQN OR "markov decision" OR MDP) '
+              '("mechanical ventilation" OR ventilator OR "ventilatory support") '
+              '(wean OR extubat OR "spontaneous breathing trial")')
+    print("OpenAlex Search Term:\n", search)
+
     BASE = "https://api.openalex.org/works"
     PER_PAGE = 200       # OpenAlex max per page
     cursor = "*"         # cursor-based pagination
@@ -101,41 +162,30 @@ except Exception as e:
     save_text("openalex_ERROR.txt", str(e))
 
 # -------------------- Semantic Scholar --------------------
-import os, math, time, json, requests
-from pathlib import Path
-
-# Where to save
-OUT_DIR = Path("paper_list/raw")
-OUT_DIR.mkdir(parents=True, exist_ok=True)
-def save_json(filename, data):
-    path = OUT_DIR / filename
-    with open(path, "w", encoding="utf-8") as f:
-        json.dump(data, f, ensure_ascii=False, indent=2)
-    print(f"Saved → {path}")
-
+# from inside the original code: import os, math, time, json, requests
 try:
-    # Your original query (kept exactly)
-    query = '"reinforcement learning" "mechanical ventilation" (weaning OR extubation OR "spontaneous breathing trial")'
+    # Expanded Semantic Scholar query (similar expansion as OpenAlex)
+    query = ('("reinforcement learning" OR "Q-learning" OR PPO OR DQN OR "markov decision" OR MDP) '
+             'AND ("mechanical ventilation" OR ventilator OR "ventilatory support") '
+             'AND (weaning OR extubation OR "spontaneous breathing trial")')
+    print("Semantic Scholar Search Term:\n", query)
 
     BASE = "https://api.semanticscholar.org/graph/v1/paper/search"
-    # Valid fields only (no top-level 'doi'; use externalIds.DOI later if needed)
     FIELDS = "paperId,title,year,venue,url,externalIds,authors"
     LIMIT = 100          # max allowed per page
     MAX_PAGES = 50       # safety cap
     SLEEP_SEC = 0.6
 
-    # Optional API key (recommended). Set SEMANTIC_SCHOLAR_API_KEY in your env if you have one.
     S2_API_KEY = os.getenv("SEMANTIC_SCHOLAR_API_KEY")
     headers = {"x-api-key": S2_API_KEY} if S2_API_KEY else {}
 
-    # 1) Probe to get total results
-    r0 = requests.get(
+    # 1) Probe to get total results (with retry)
+    r0 = get_with_retry(
         BASE,
-        params={"query": query, "limit": 1, "offset": 0, "fields": "paperId"},
         headers=headers,
-        timeout=30
+        params={"query": query, "limit": 1, "offset": 0, "fields": "paperId"},
+        timeout=30,
     )
-    r0.raise_for_status()
     total = r0.json().get("total", 0)
     print("Semantic Scholar total (reported):", total)
 
@@ -145,17 +195,15 @@ try:
     # 2) Page safely (stop if API says no more data or data is empty)
     for page in range(pages):
         offset = page * LIMIT
-        r = requests.get(
+        r = get_with_retry(
             BASE,
-            params={"query": query, "limit": LIMIT, "offset": offset, "fields": FIELDS},
             headers=headers,
-            timeout=30
+            params={"query": query, "limit": LIMIT, "offset": offset, "fields": FIELDS},
+            timeout=30,
         )
         if r.status_code == 400:
-            # Common S2 message: "Requested data for this limit and/or offset is not available"
             print(f"S2: stopping early at offset={offset} (no more data).")
             break
-        r.raise_for_status()
 
         data = r.json().get("data", []) or []
         if not data:
@@ -166,7 +214,7 @@ try:
         print(f"S2 page {page+1}/{pages} (offset={offset}) fetched: {len(data)}")
         time.sleep(SLEEP_SEC)
 
-    # 3) Save a single consolidated JSON (schema matches your normalizer: top-level 'items')
+    # 3) Save a single consolidated JSON
     save_json("semanticscholar_all.json", {
         "query": query,
         "fields": FIELDS,
@@ -178,17 +226,14 @@ try:
     })
 
 except Exception as e:
-    # Save error for debugging
-    with open(OUT_DIR / "semanticscholar_ERROR.txt", "w", encoding="utf-8") as f:
+    with open(RAW_DIR / "semanticscholar_ERROR.txt", "w", encoding="utf-8") as f:
         f.write(str(e))
     print("Semantic Scholar fetch failed:", e)
 
 # -------------------- arXiv (robust) ------------------------------------------------------------
 try:
-    import math, time, requests, xml.etree.ElementTree as ET
-
     BASE = "http://export.arxiv.org/api/query"
-    # Multiple targeted queries without parentheses. We'll de-dup later during normalization.
+    # Keep original arXiv query structure, which is already quite robust for keyword searching
     QUERIES = [
         'all:"reinforcement learning" AND all:"mechanical ventilation" AND all:wean',
         'all:"reinforcement learning" AND all:"mechanical ventilation" AND all:extubat',
@@ -196,19 +241,18 @@ try:
         'all:"reinforcement learning" AND all:ventilator AND all:wean',
         'all:"reinforcement learning" AND all:ventilator AND all:extubat',
     ]
-    # Broad fallback to ensure we still collect RL+MV items even if no weaning keyword matched
     FALLBACK = 'all:"reinforcement learning" AND (all:"mechanical ventilation" OR all:ventilator)'
 
     MAX_RESULTS = 200     # arXiv allows up to 300, but 200 is safe
     SLEEP_SEC = 3.0       # recommended: ~3s between calls
-    UA = "rl-mv-weaning-review/0.1 (mailto:your_email@example.com)"  # <-- put your email
+    # !! IMPORTANT: Update your email address below to comply with arXiv's policy !!
+    UA = "rl-mv-weaning-review/0.1 (mailto:your_email@example.com)"
 
     headers = {"User-Agent": UA}
     ns = {"opensearch": "http://a9.com/-/spec/opensearch/1.1/"}
 
     def fetch_query(q):
         """Fetch all pages for a given query; return list of {start, xml} pages."""
-        # First get total
         r0 = requests.get(
             BASE,
             params={"search_query": q, "start": 0, "max_results": 1},
@@ -244,7 +288,6 @@ try:
         totals.append({"query": q, "total": total})
         all_pages.extend(pages)
 
-    # If everything came back zero, run a broader fallback query.
     if all(t["total"] == 0 for t in totals):
         print("All targeted arXiv queries returned 0. Trying broader fallback…")
         pages, total = fetch_query(FALLBACK)
@@ -257,110 +300,122 @@ try:
         "max_results_per_page": MAX_RESULTS,
         "pages_fetched": len(all_pages),
         "totals_reported": totals,
-        "pages": all_pages   # raw Atom XML per page; normalization will parse later
+        "pages": all_pages
     })
 except Exception as e:
     save_text("arxiv_ERROR.txt", str(e))
 
-# # -------------------- Scopus ------------------------------------------------------------
-# try:
-#     # accept either Scopus_API_KEY or SCOPUS_API_KEY
-#     Scopus_API_KEY = os.getenv("Scopus_API_KEY") or os.getenv("SCOPUS_API_KEY")
-#     if not Scopus_API_KEY:
-#         raise RuntimeError("SCOPUS_API_KEY / Scopus_API_KEY env var not set.")
-#     INSTTOKEN = os.getenv("SCOPUS_INSTTOKEN") or os.getenv("Scopus_INSTTOKEN")  # optional
+# -------------------- Scopus --------------------
+try:
+    # accept either Scopus_API_KEY or SCOPUS_API_KEY
+    Scopus_API_KEY = os.getenv("Scopus_API_KEY") or os.getenv("SCOPUS_API_KEY")
+    if not Scopus_API_KEY:
+        raise RuntimeError("SCOPUS_API_KEY / Scopus_API_KEY env var not set.")
+    INSTTOKEN = os.getenv("SCOPUS_INSTTOKEN") or os.getenv("Scopus_INSTTOKEN")  # optional
 
-#     headers = {"X-ELS-APIKey": Scopus_API_KEY, "Accept": "application/json"}
-#     if INSTTOKEN:
-#         headers["X-ELS-Insttoken"] = INSTTOKEN
+    headers = {"X-ELS-APIKey": Scopus_API_KEY, "Accept": "application/json"}
+    if INSTTOKEN:
+        headers["X-ELS-Insttoken"] = INSTTOKEN
 
-#     query = 'TITLE-ABS-KEY("reinforcement learning" AND ("mechanical ventilation" OR ventilator OR "ventilatory support") AND (wean* OR extubat* OR "spontaneous breathing trial" OR SBT))'
-#     BASE = "https://api.elsevier.com/content/search/scopus"
-#     COUNT = 25          # typical page size
-#     start, pages, all_entries = 0, 0, []
-#     total_reported = None
+    query = 'TITLE-ABS-KEY("reinforcement learning" AND ("mechanical ventilation" OR ventilator OR "ventilatory support") AND (wean* OR extubat* OR "spontaneous breathing trial" OR SBT))'
+    BASE = "https://api.elsevier.com/content/search/scopus"
+    COUNT = 25          # typical page size
+    start, pages, all_entries = 0, 0, []
+    total_reported = None
+    MAX_PAGES = 20      # safety cap to avoid hammering API
 
-#     while True:
-#         r = requests.get(BASE, headers=headers, params={"query": query, "start": start, "count": COUNT}, timeout=30)
-#         if r.status_code in (401, 403):
-#             raise RuntimeError(f"Scopus auth/entitlement issue: {r.status_code} {r.text[:200]}")
-#         r.raise_for_status()
-#         data = r.json()
-#         if total_reported is None:
-#             total_reported = int((data.get("search-results", {}) or {}).get("opensearch:totalResults", "0") or "0")
-#             print("Scopus total (reported):", total_reported)
-#         entries = (data.get("search-results", {}) or {}).get("entry", []) or []
-#         all_entries.extend(entries)
-#         pages += 1
-#         print(f"Scopus page {pages} (start={start}) fetched: {len(entries)}")
-#         if len(entries) < COUNT:
-#             break
-#         start += COUNT
-#         time.sleep(0.5)
+    while True:
+        r = get_with_retry(
+            BASE,
+            headers=headers,
+            params={"query": query, "start": start, "count": COUNT},
+            timeout=30,
+        )
+        data = r.json()
+        if total_reported is None:
+            total_reported = int((data.get("search-results", {}) or {}).get("opensearch:totalResults", "0") or "0")
+            print("Scopus total (reported):", total_reported)
+        entries = (data.get("search-results", {}) or {}).get("entry", []) or []
+        all_entries.extend(entries)
+        pages += 1
+        print(f"Scopus page {pages} (start={start}) fetched: {len(entries)}")
 
-#     save_json("scopus_all.json", {
-#         "query": query,
-#         "count_per_page": COUNT,
-#         "pages_fetched": pages,
-#         "total_reported": total_reported,
-#         "total_items_concat": len(all_entries),
-#         "entries": all_entries
-#     })
-# except Exception as e:
-#     save_text("scopus_ERROR.txt", str(e))
+        # stop conditions
+        if len(entries) < COUNT:
+            break
+        if pages >= MAX_PAGES:
+            print(f"Reached Scopus MAX_PAGES={MAX_PAGES}, stopping to avoid rate limit.")
+            break
 
-# # -------------------- Web of Science ------------------------------------------------------------
-# try:
-#     WOS_API_KEY = os.getenv("WOS_API_KEY") or ""
-#     if not WOS_API_KEY:
-#         raise RuntimeError("WOS_API_KEY env var not set.")
-#     usrQuery = 'TS=("reinforcement learning" AND ("mechanical ventilation" OR ventilator) AND (wean* OR extubat* OR "spontaneous breathing trial"))'
+        start += COUNT
+        time.sleep(1.0)
 
-#     BASE = "https://api.clarivate.com/api/wos"
-#     COUNT = 100        # often up to 100 per page
-#     first, pages, all_pages = 1, 0, []
-#     total_reported = None
+    save_json("scopus_all.json", {
+        "query": query,
+        "count_per_page": COUNT,
+        "pages_fetched": pages,
+        "total_reported": total_reported,
+        "total_items_concat": len(all_entries),
+        "entries": all_entries
+    })
+except Exception as e:
+    save_text("scopus_ERROR.txt", str(e))
 
-#     while True:
-#         r = requests.get(
-#             BASE,
-#             headers={"X-ApiKey": WOS_API_KEY},
-#             params={"databaseId": "WOS", "usrQuery": usrQuery, "count": COUNT, "firstRecord": first},
-#             timeout=60
-#         )
-#         if r.status_code in (401, 403):
-#             raise RuntimeError(f"WOS auth/entitlement issue: {r.status_code} {r.text[:200]}")
-#         r.raise_for_status()
-#         data = r.json()
-#         all_pages.append({"firstRecord": first, "payload": data})
-#         pages += 1
+# -------------------- Web of Science (Unchanged from original commented block) --------------------
+try:
+    WOS_API_KEY = os.getenv("WOS_API_KEY") or ""
+    if not WOS_API_KEY:
+        raise RuntimeError("WOS_API_KEY env var not set.")
+    usrQuery = 'TS=("reinforcement learning" AND ("mechanical ventilation" OR ventilator) AND (wean* OR extubat* OR "spontaneous breathing trial"))'
 
-#         # total records reported (varies by deployment)
-#         if total_reported is None:
-#             qres = (data.get("QueryResult") or {})
-#             total_reported = qres.get("RecordsFound") or (data.get("Data") or {}).get("RecordsFound")
-#             print("Web of Science total (reported):", total_reported)
+    BASE = "https://api.clarivate.com/api/wos"
+    COUNT = 100        # often up to 100 per page
+    first, pages, all_pages = 1, 0, []
+    total_reported = None
+    MAX_PAGES = 10     # safety cap for WOS
 
-#         # infer how many were returned on this page
-#         returned = 0
-#         recs = (data.get("Data") or {}).get("Records")
-#         if isinstance(recs, list):
-#             returned = len(recs)
-#         print(f"WOS page {pages} (firstRecord={first}) fetched ~{returned}")
-#         if returned < COUNT:
-#             break
-#         first += COUNT
-#         time.sleep(0.5)
+    while True:
+        r = get_with_retry(
+            BASE,
+            headers={"X-ApiKey": WOS_API_KEY},
+            params={"databaseId": "WOS", "usrQuery": usrQuery, "count": COUNT, "firstRecord": first},
+            timeout=60,
+        )
+        data = r.json()
+        all_pages.append({"firstRecord": first, "payload": data})
+        pages += 1
 
-#     save_json("wos_all.json", {
-#         "usrQuery": usrQuery,
-#         "count_per_page": COUNT,
-#         "pages_fetched": pages,
-#         "total_reported": total_reported,
-#         "pages": all_pages   # store raw page payloads; no parsing
-#     })
-# except Exception as e:
-#     save_text("wos_ERROR.txt", str(e))
+        # total records reported (varies by deployment)
+        if total_reported is None:
+            qres = (data.get("QueryResult") or {})
+            total_reported = qres.get("RecordsFound") or (data.get("Data") or {}).get("RecordsFound")
+            print("Web of Science total (reported):", total_reported)
+
+        # infer how many were returned on this page
+        returned = 0
+        recs = (data.get("Data") or {}).get("Records")
+        if isinstance(recs, list):
+            returned = len(recs)
+        print(f"WOS page {pages} (firstRecord={first}) fetched ~{returned}")
+
+        if returned < COUNT:
+            break
+        if pages >= MAX_PAGES:
+            print(f"Reached WOS MAX_PAGES={MAX_PAGES}, stopping to avoid rate limit.")
+            break
+
+        first += COUNT
+        time.sleep(1.0)
+
+    save_json("wos_all.json", {
+        "usrQuery": usrQuery,
+        "count_per_page": COUNT,
+        "pages_fetched": pages,
+        "total_reported": total_reported,
+        "pages": all_pages
+    })
+except Exception as e:
+    save_text("wos_ERROR.txt", str(e))
 
 # -------------------- Google Scholar via SerpAPI (multi-page → single JSON) --------------------
 try:
@@ -368,17 +423,22 @@ try:
     if not SerpAPI_KEY:
         raise RuntimeError("SerpAPI_KEY env var not set.")
 
-    q = '"reinforcement learning" "mechanical ventilation" (wean OR extubat OR "spontaneous breathing trial")'
+    # Expanded Google Scholar search (similar expansion as OpenAlex/S2)
+    q = ('("reinforcement learning" OR "Q-learning" OR PPO OR DQN OR "markov decision" OR MDP) '
+         'AND ("mechanical ventilation" OR ventilator OR "ventilatory support") '
+         'AND (wean OR extubat OR "spontaneous breathing trial")')
+    print("Google Scholar Search Term:\n", q)
+
     BASE = "https://serpapi.com/search.json"
     NUM_PER_PAGE = 20          # Google Scholar max is 20 per page
-    PAGES = 5                  # fetch at least 5 pages
+    PAGES = 10                 # requested pages
     SLEEP_SEC = 1.0            # polite pacing
 
-    all_items = []  # concatenate items from each page (no processing)
+    all_items = []
     pages_fetched = 0
 
     for page in range(PAGES):
-        start = page * NUM_PER_PAGE  # 0,20,40,60,80
+        start = page * NUM_PER_PAGE  # 0,20,40,60,80,...
         params = {
             "engine": "google_scholar",
             "q": q,
@@ -400,12 +460,11 @@ try:
         "num_per_page": NUM_PER_PAGE,
         "pages_fetched": pages_fetched,
         "total_items_concat": len(all_items),
-        "items": all_items  # raw items concatenated; no dedup / no filtering
+        "items": all_items
     }
     save_json("google_scholar_all.json", combined)
 
 except Exception as e:
     save_text("google_scholar_ERROR.txt", str(e))
 
-# -------------------- done (no further processing) --------------------
 print("\nDone. Raw outputs saved in ./paper_list/")

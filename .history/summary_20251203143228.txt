@@ -1,0 +1,858 @@
+[TXT VERSION – 15 RL PAPERS IN UNIFIED FORMAT, UPDATED NUMERIC RESULTS]
+
+1) A Reinforcement Learning Approach to Weaning of Mechanical Ventilation in Intensive Care Units
+- Authors: Niranjani Prasad, Li-Fang Cheng, Corey Chivers, Michael Draugelis, Barbara E. Engelhardt  
+- Year: 2019  
+- ref: prasad2019reinforcement 
+- Country/Region: USA (Princeton University; Penn Medicine)  
+- Dataset:
+  - MIMIC-III ICU database (adult, invasively ventilated patients)
+- Sample size:
+  - 8,860 admissions from 8,182 unique adult patients undergoing invasive ventilation
+  - RL analysis performed on a filtered subset (ventilation >24h, other clinical criteria)
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation in the weaning / sedation management phase
+- RL methods:
+  - State:
+    - High-dimensional summary of recent vitals, labs, ventilator mode/level, sedation, and trajectory features over a sliding window
+  - Action:
+    - Joint actions on:
+      - Sedation dosing (4 discrete dose levels)
+      - Ventilatory support level (e.g., assist vs support changes)
+  - Reward:
+    - Positive reward for successful, sustained weaning/extubation without re-intubation
+    - Penalties for re-intubation, death, and physiologic instability
+  - Algorithm:
+    - Offline fitted Q-iteration / Q-learning
+    - Function approximation via extremely randomized trees and neural fitted Q-iteration (NFQ, FQIT)
+- Evaluation strategy:
+  - Retrospective, off-policy comparison between RL-recommended actions and clinicians’ actions
+  - Evaluate action-matching rate and association between “policy agreement” and outcomes (re-intubation, reward)
+- Evaluation results (numeric):
+  - Ventilation policy:
+    - NFQ and FQIT both match clinician policy in ≈85% of transitions
+  - Sedation policy:
+    - FQIT achieves ≈58% action-matching accuracy vs ≈28% for NFQ (near-random over 4 levels)
+  - Patients whose actions are closer to the RL policy show:
+    - Lower re-intubation rates
+    - Higher accumulated reward (shown in stratified plots; no single summary risk difference)
+- Limitations:
+  - Single-center, retrospective analysis
+  - Reward design may not fully capture clinician preferences
+  - No prospective or live deployment of the RL policy
+
+
+2) Weaning of Mechanically Ventilated Patients in the ICU: A Clinician-in-the-Loop Reinforcement Learning Approach
+- Authors: Nicola Elias Rüegsegger  
+- Year: 2021  
+- ref: ruegsegger2021weaning 
+- Country/Region: Switzerland (ETH Zürich; HIRID 2 dataset)  
+- Dataset:
+  - HIRID 2 high-resolution ICU dataset
+- Sample size:
+  - 54,128 unique patients in HIRID 2
+  - 5,176 unique mechanically ventilated patients included in this weaning RL study
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation in a Swiss tertiary-care hospital
+- RL methods:
+  - State:
+    - Four-hourly time series of vitals, labs, ventilator settings, and other ICU variables
+  - Action:
+    - Discrete weaning actions:
+      - Continue current support
+      - Reduce support
+      - SBT/extubation-related actions (depending on model variant)
+  - Reward:
+    - Composite outcome rewarding successful weaning and survival
+    - Penalties for prolonged ventilation, failed weaning, or adverse outcomes
+  - Algorithm:
+    - Offline value-based RL (Q-learning–type methods, value iteration, NOSVP variants)
+    - Clinician-in-the-loop policy review and post-processing (e.g., constraints)
+- Evaluation strategy:
+  - Off-policy value estimation of RL-derived policies vs observed clinician policy
+  - Average-reward scoring and clinical scoring of different policies
+- Evaluation results (numeric):
+  - Table 4.2 (average reward ± SD and completion rate) on the test set:
+    - 15-min sampling:
+      - p_empirical:  −43.67 ± 0.34 (80% completion)
+      - p_naive max: −100.00 ± 0.00 (100%)
+      - p_naive random: −34.13 ± 0.38 (89%)
+      - p_VI: −14.66 ± 0.49 (61%)
+      - p_QL: −20.53 ± 0.23 (59%)
+      - p_NOSVP,z=0.0: −18.94 ± 0.38 (58%)
+      - p_NOSVP,z=0.05: −17.41 ± 0.34 (58%)
+      - p_NOSVP,z=0.1: −13.04 ± 0.26 (61%)
+      - p_NOSVP,z=0.15: −13.22 ± 0.34 (60%)
+      - p_NOSVP,z=0.2: −10.85 ± 0.39 (61%)
+    - 1-h sampling (emphasized in the thesis):
+      - p_empirical: −44.81 ± 0.21 (92%)
+      - p_naive max: −98.78 ± 0.03 (100%)
+      - p_naive random:  −5.78 ± 0.44 (74%)
+      - p_VI:  27.86 ± 0.35 (67%)
+      - p_QL:  32.92 ± 0.15 (62%)
+      - p_NOSVP,z=0.0:  30.54 ± 0.37 (63%)
+      - p_NOSVP,z=0.05:  34.69 ± 0.26 (68%)
+      - p_NOSVP,z=0.1:  39.24 ± 0.35 (70%)
+      - p_NOSVP,z=0.15:  38.08 ± 0.28 (70%)
+      - p_NOSVP,z=0.2:  39.43 ± 0.25 (69%)
+    - 4-h sampling:
+      - p_empirical: −43.40 ± 0.29 (90%)
+      - p_naive max: −100.00 ± 0.00 (98%)
+      - p_naive random: −25.38 ± 0.26 (88%)
+      - p_VI:  −5.27 ± 0.44 (85%)
+      - p_QL:   5.55 ± 0.44 (81%)
+      - p_NOSVP,z=0.0:   7.18 ± 0.23 (80%)
+      - p_NOSVP,z=0.05:  0.11 ± 0.29 (80%)
+      - p_NOSVP,z=0.1:  −5.54 ± 0.30 (86%)
+      - p_NOSVP,z=0.15: −1.85 ± 0.26 (86%)
+      - p_NOSVP,z=0.2:  −0.79 ± 0.19 (86%)
+  - Overall: 1-h sampling with NOSVP (z≈0.1–0.2) achieves the highest average reward (~39 vs ~33 for Q-learning, ~28 for VI, ~−45 for empirical policy).
+- Limitations:
+  - Undergraduate thesis; no multi-center or prospective validation
+  - Heavily reliant on off-policy estimators and untestable confounding assumptions
+
+
+3) Inverse Reinforcement Learning for Intelligent Mechanical Ventilation and Sedative Dosing in Intensive Care Units
+- Authors: Chao Yu, Jiming Liu, Hongyi Zhao
+- Year: 2019 
+- ref: yu2019inverse
+- Country/Region: China and Hong Kong (Dalian University of Technology; Hong Kong Baptist University)  
+- Dataset:
+  - Retrospective ICU data on mechanically ventilated, continuously sedated adult patients (single-center)
+- Sample size:
+  - Cohort of adult patients with invasive MV and continuous sedation (N in methods; typically hundreds–low thousands)
+- Clinical setting & target population:
+  - Adult ICU patients on invasive MV receiving continuous sedative infusions
+- RL methods:
+  - State:
+    - Vitals, ventilator settings, sedation infusion rate, sedation/agitation scores, labs, demographics
+  - Action:
+    - Joint sedation actions (increase / decrease / no change)
+    - Ventilation support actions (adjust support level/mode)
+  - Reward:
+    - Not specified a priori; inferred via inverse reinforcement learning (IRL) from clinician trajectories as a latent utility function
+  - Algorithm:
+    - Bayesian IRL to estimate reward weights
+    - Batch RL (e.g., fitted Q-iteration with function approximation) to compute optimal policy under the learned reward
+- Evaluation strategy:
+  - Goodness-of-fit: compare IRL model vs baselines using policy similarity and trajectory likelihood
+  - Off-policy evaluation of the IRL-optimized policy vs empiric clinician policy
+- Evaluation results (numeric):
+  - Policy consistency (Table 2, test set):
+    - Baseline policy π_BL:
+      - Joint action matching: 53.5%
+      - Ventilation action consistency: 99.6%
+      - Sedation action consistency: 53.9%
+    - A worse baseline policy π_BL2:
+      - Joint action matching: 14.1%
+    - IRL policy:
+      - Ventilation action consistency: 99.7%
+      - Sedation action consistency: 54.2%
+      - Joint action consistency: 53.9%
+  - Correctness of sedative dosing policies (Table 3):
+    - π_IBL:
+      - Expert data: 44.5%
+      - Ordinary single intubation: 48.5%
+      - Multiple intubation: 63.4%
+    - π_BL:
+      - Expert data: 44.4%
+      - Ordinary single intubation: 48.4%
+      - Multiple intubation: 62.8%
+  - Text and figures further show higher estimated cumulative reward for IRL-derived policies vs naive baselines, but those reward values are scenario-specific rather than a single global number.
+- Limitations:
+  - Reward identifiability issues inherent to IRL
+  - Retrospective, single-center dataset
+  - No prospective deployment or safety validation
+
+
+4) Supervised-Actor-Critic Reinforcement Learning for Intelligent Mechanical Ventilation and Sedative Dosing in Intensive Care Units
+- Authors: Chao Yu, Guoqi Ren, Yinzhao Dong  
+- Year: 2020 
+- ref: yu2020supervised 
+- Country/Region: China and Hong Kong (same group as IRL paper)  
+- Dataset:
+  - Retrospective cohort of adult invasively ventilated ICU patients under continuous sedation
+- Sample size:
+  - Same source cohort as IRL work (hundreds–low thousands of patients; N in methods)
+- Clinical setting & target population:
+  - Adult ICU patients on invasive MV with continuous sedation
+- RL methods:
+  - State:
+    - Time-indexed vitals, sedation scores, ventilator mode/parameters, labs, demographics
+  - Action:
+    - Joint sedation and ventilation actions (discrete dosing and support levels)
+  - Reward:
+    - Explicit function encoding comfort, physiologic stability, and successful liberation from MV without complications
+  - Algorithm:
+    - Supervised Actor–Critic (SAC):
+      - Critic: TD learning of value function
+      - Actor: RL objective plus supervised loss to keep policy close to clinician actions
+- Evaluation strategy:
+  - Retrospective off-policy evaluation on historical trajectories
+  - Compare SAC vs pure actor–critic (AC) and behavior cloning on action-matching and return
+- Evaluation results (numeric):
+  - Action-matching rate (AR) to clinician policy (Table 1):
+    - SAC:
+      - Validation set: 99.55%
+      - Expert data: 99.57%
+      - Common single intubation: 99.51%
+      - Multiple intubation: 99.55%
+    - AC:
+      - Validation set: 99.48%
+      - Expert data: 99.47%
+      - Common single intubation: 99.46%
+      - Multiple intubation: 99.49%
+  - Figures show SAC achieving higher normalized cumulative rewards and faster convergence of Q-function than unsupervised AC, but exact reward means are given graphically rather than as a single scalar.
+- Limitations:
+  - Single-center data; model design specific to this cohort
+  - No real-time deployment or human-in-the-loop testing
+  - Limited interpretability of the learned policies
+
+
+5) Reinforcement Learning Model for Managing Noninvasive Ventilation Switching Policy
+- Authors: Xue Feng, Daoyuan Wang, Qing Pan, et al.
+- Year: 2023 
+- ref: feng2023reinforcement 
+- Country/Region: China (tertiary hospital; uses MIMIC-III–derived cohort)  
+- Dataset:
+  - Critical care database of patients receiving NIV/HFNC (MIMIC-III based)
+- Sample size:
+  - 61,532 admissions screened
+  - Final cohort: 11,053 patients with 25 features for NIV switching analysis
+- Clinical setting & target population:
+  - Adult ICU patients treated with noninvasive ventilation (NIV) or high-flow nasal cannula (HFNC)
+- RL methods:
+  - State:
+    - Disease category, vitals, labs, NIV parameters, comorbidities, and other clinical features
+  - Action:
+    - NIV switching policy:
+      - Continue NIV
+      - Intubate
+      - Escalate / de-escalate support
+  - Reward:
+    - Long-term reward proxy for 28-day survival; higher return corresponds to lower predicted mortality
+  - Algorithm:
+    - Double-Dueling Deep Q-Network (D3QN), trained offline
+- Evaluation strategy:
+  - Off-policy evaluation of RL vs clinician policies using expected discounted returns
+  - Subgroup analyses (e.g., by disease category and risk)
+- Evaluation results (numeric):
+  - Overall NIV cases:
+    - Predicted 28-day mortality reduced from 27.82% (clinician policy) to 25.44% (RL policy)
+    - Absolute reduction ≈2.38 percentage points
+  - High-risk subgroups show larger relative mortality reductions (numbers per subgroup in tables)
+- Limitations:
+  - Observational, single-system data
+  - No prospective trial of the RL switching policy
+  - Black-box neural network policy; interpretability limited
+
+
+6) Reinforcement Learning to Optimize Ventilator Settings for Patients on Invasive Mechanical Ventilation: Retrospective Study
+- Authors: Siqi Liu, Qianyi Xu, Zhuoyang Xu, Zhuo Liu, Xingzhi Sun, Guotong Xie, Mengling Feng, Kay Choong See
+- Year: 2024
+- ref: liu2024reinforcement 
+- Country/Region: Singapore and China (authors); data from ICUs in the United States
+- Dataset:
+  - eICU Collaborative Research Database (eICU)
+  - MIMIC-IV ICU database
+- Sample size:
+  - 21,595 ICU stays from eICU
+  - 5,105 ICU stays from MIMIC-IV
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation in multiple ICUs in the United States
+- RL methods:
+  - State:
+    - Time-varying summaries of patient condition (vitals, oxygen saturation, MAP, ventilator settings, labs, severity scores)
+  - Action:
+    - Low / medium / high levels of three ventilator settings:
+      - PEEP
+      - FiO₂
+      - Ideal body-weight–adjusted tidal volume
+    - Policy selects a categorical level for each parameter given current state
+  - Reward:
+    - Terminal reward based on hospital mortality
+    - Intermediate rewards for keeping SpO₂ and MAP within predefined optimal ranges
+  - Algorithm:
+    - Batch-Constrained Deep Q-Learning (BCQ), an offline RL algorithm constraining policy to remain close to behavior (clinician) policy
+- Evaluation strategy:
+  - Retrospective, purely off-policy evaluation on eICU and MIMIC-IV
+  - Train BCQ on historical data and apply OPE to estimate outcomes under AI policy vs observed practice
+- Evaluation results (numeric):
+  - Observed hospital mortality (clinicians):
+    - eICU: 18.2%
+    - MIMIC-IV: 31.1%
+  - Estimated hospital mortality under AI policy:
+    - eICU: 14.7% ± 0.7%
+    - MIMIC-IV: 29.1% ± 0.9%
+  - Estimated proportion of optimal SpO₂ under AI policy:
+    - eICU: 57.8% ± 1.0%
+    - MIMIC-IV: 49.0% ± 1.0%
+  - Estimated proportion of optimal MAP under AI policy:
+    - eICU: 34.7% ± 1.0%
+    - MIMIC-IV: 41.2% ± 1.0%
+  - AI policy consistently outperforms clinician policy in OPE across multiple metrics
+- Limitations:
+  - Fully retrospective; no prospective / randomized validation
+  - Outcomes under AI policy are estimated via OPE, not directly observed
+  - Reward and optimal-range choices reflect specific clinical assumptions
+  - Discrete low/medium/high action space simplifies but coarsens real decisions
+
+
+7) Development and Validation of a Reinforcement Learning Algorithm to Dynamically Optimize Mechanical Ventilation in Critical Care (VentAI – general ICU)
+- Authors: Arne Peine et al.  
+- Year: 2021  
+- ref: peine2021development
+- Country/Region: Germany + international collaborators (data from US and international ICUs)  
+- Dataset:
+  - ICU databases with volume-controlled mechanical ventilation
+  - Primary derivation: MIMIC-III–style cohort
+  - External validation: independent ICU network
+- Sample size:
+  - Primary: 11,443 patients with 11,943 MV events
+  - Secondary (external): 23,699 patients with 25,086 MV events
+- Clinical setting & target population:
+  - Adult ICU patients on volume-controlled invasive mechanical ventilation
+- RL methods:
+  - State:
+    - “Ventilator fingerprint” – 44 features summarizing gas exchange, lung mechanics, vitals, labs, etc., in 4-hour time steps
+  - Action:
+    - Discrete combinations of:
+      - Tidal volume (Vt)
+      - PEEP
+      - FiO₂
+  - Reward:
+    - Based on mortality (in-hospital / 90-day) and adherence to lung-protective ventilation
+  - Algorithm:
+    - Value-based RL (VentAI) via Q-learning with OPE-calibrated policies
+- Evaluation strategy:
+  - Internal derivation + external validation design
+  - Off-policy evaluation comparing RL vs clinician policies across multiple cohorts
+- Evaluation results (numeric):
+  - Estimated policy return:
+    - VentAI: 83.3 (primary cohort) and 84.1 (secondary cohort)
+    - Physician policy: 51.1
+  - VentAI recommends:
+    - Vt 5–7.5 mL/kg ≈203% more frequently than clinician practice
+    - High FiO₂ (>55%) ≈59.8% less often than clinicians
+  - OPE links these pattern changes with improved survival compared with observed care.
+- Limitations:
+  - No prospective deployment
+  - Reward/value scales are composite and abstract
+  - Residual confounding possible despite large datasets
+
+
+8) Development and Validation of a Reinforcement Learning Algorithm to Dynamically Optimize Mechanical Ventilation in Patients with Moderate–Severe ARDS (VentAI – ARDS)
+- Authors: Hui-ping Li et al.  
+- Year: 2024  
+- ref: li2024development 
+- Country/Region: China + international collaborators  
+- Dataset:
+  - Multi-database ARDS cohort:
+    - eICU
+    - MIMIC-III
+    - MIMIC-IV
+- Sample size:
+  - 16,487 ARDS patients:
+    - 6,348 from eICU
+    - 6,752 from MIMIC-III
+    - 3,387 from MIMIC-IV
+- Clinical setting & target population:
+  - Adult ICU patients with moderate–severe ARDS on invasive MV
+- RL methods:
+  - State:
+    - ARDS-focused ventilator fingerprint including PaO₂/FiO₂, lung mechanics, ventilator settings, vitals, labs
+  - Action:
+    - Discrete lung-protective combinations of Vt, PEEP, and FiO₂
+  - Reward:
+    - Mortality-oriented return with penalties for unsafe or non–lung-protective settings
+  - Algorithm:
+    - VentAI RL trained specifically for the ARDS subpopulation
+- Evaluation strategy:
+  - Off-policy evaluation across eICU, MIMIC-III, and MIMIC-IV
+  - Compare rewards and estimated mortality patterns between AI and clinicians
+- Evaluation results (numeric):
+  - AI treatment selection yields consistently higher estimated rewards than clinician policy in all three databases.
+  - AI changes Vt roughly 1.5× and PEEP about 2× as often as clinicians, enabling more dynamic lung-protective titration.
+  - Lowest mortality is observed in strata where clinicians’ actual settings align with the AI platform’s recommended decisions (exact mortality percentages are provided in detailed tables).
+- Limitations:
+  - Offline analyses only; no prospective study
+  - Mortality improvements are inferred from observational OPE
+  - Dependence on ARDS definitions and cross-database harmonization
+
+
+9) Development and Validation of a Reinforcement Learning Model for Ventilation Control During Emergence from General Anesthesia (AIVE)
+- Authors: Hyeonhoon Lee et al.  
+- Year: 2023  
+- ref: lee2023development 
+- Country/Region: South Korea (two academic hospitals)  
+- Dataset:
+  - Intraoperative and emergence-phase data from two centers
+- Sample size:
+  - Derivation cohort: 31,071 cases
+    - AIVE model: 14,306 cases used for training/derivation
+    - 2,146 cases (15%) for internal validation
+  - External validation cohort: 406 cases (162,656 one-second time points)
+- Clinical setting & target population:
+  - Adult patients under general anesthesia during emergence and weaning from ventilator support
+- RL methods:
+  - State:
+    - One-second–resolution ventilatory and hemodynamic variables:
+      - Airway pressure, flow, EtCO₂, SpO₂, HR, BP, etc.
+  - Action:
+    - Discrete ventilation control policies:
+      - Manual vs assisted patterns
+      - Different levels of support intensity during emergence
+  - Reward:
+    - Balances cardiorespiratory stability and successful spontaneous breathing / extubation
+  - Algorithm:
+    - Off-policy RL model (AIVE) trained on derivation cohort using historical trajectories
+- Evaluation strategy:
+  - Internal and external validation
+  - Compare estimated reward and cardiorespiratory instability rates under AIVE vs observed clinician policy
+- Evaluation results (numeric):
+  - Internal validation:
+    - AIVE policy: 95% lower bound of estimated reward = 0.185
+    - Clinician policy: 95% upper bound of estimated reward = −0.406
+  - External validation:
+    - AIVE policy: 95% lower bound = 0.506
+    - Clinician policy: 95% upper bound = 0.154
+  - Cardiorespiratory instability rates are lowest when clinicians’ actual actions coincide with AIVE policy recommendations.
+- Limitations:
+  - Retrospective, two-center design
+  - No real-time closed-loop control yet
+  - Reward and policy design tuned for emergence phase; generalization to other phases unclear
+
+
+10) Improving Patient-Ventilator Synchrony During Pressure Support Ventilation Based on Reinforcement Learning Algorithm
+- Authors: Liming Hao et al.  
+- Year: 2025  
+- ref: hao2025improving 
+- Country/Region: China (Beijing Chao-Yang Hospital and engineering collaborators)  
+- Dataset:
+  - Simulation experiments based on a pneumatic model
+  - Clinical recordings from 180 patients aged 42–65 years used to parameterize/evaluate the model
+- Sample size:
+  - 180 patients’ respiratory waveforms plus large numbers of simulated breaths
+- Clinical setting & target population:
+  - Patients on pressure support ventilation (PSV) with risk of patient-ventilator asynchrony (PVA)
+- RL methods:
+  - State:
+    - Mechanical ventilation system state defined by pressure, flow, and timing features that characterize PVA types and synchrony
+  - Action:
+    - Adjust PSV settings (e.g., pressure support level, trigger sensitivity, cycling thresholds)
+  - Reward:
+    - Penalizes breaths with PVA
+    - Rewards synchronized and stable ventilation
+  - Algorithm:
+    - Deep Q-Learning (DQN-based control policy)
+- Evaluation strategy:
+  - Simulation experiments across diverse PVA scenarios
+  - Compare RL-optimized strategy vs fixed and heuristic strategies
+- Evaluation results (numeric):
+  - RL-optimized strategy reduces the proportion of PVA-containing breaths from 37.52% to 7.08% in key scenarios.
+  - Multiple PVA subtypes show substantial reductions vs baseline or heuristic strategies (subtype-specific numbers in tables).
+- Limitations:
+  - Heavy reliance on simulation and model-based evaluation
+  - Limited direct clinical outcome data
+  - Integration into commercial ventilators and bedside testing remains future work
+
+
+11) Interpretable Machine Learning for Resource Allocation with Application to Ventilator Triage
+- Authors: Julien Grand-Clément, You Hui Goh, Carri W. Chan, Vineet Goyal, Elizabeth Chuang
+- Year: 2021 
+- ref: grand2021interpretable 
+- Country/Region: USA (COVID-19 ventilator triage context; Montefiore Medical Center, New York)  
+- Dataset:
+  - Real COVID-19 patient data (for risk modeling)
+  - Simulated surge scenarios for triage decisions
+- Sample size:
+  - 807 intubated COVID-19 patients used to calibrate the risk model
+  - Simulated cohorts of hundreds–thousands of patients per scenario
+- Clinical setting & target population:
+  - Patients potentially requiring invasive MV during resource scarcity
+- RL/MDP methods:
+  - State:
+    - Patient-level risk profile (severity, comorbidities, predicted outcomes)
+    - Current ventilator inventory and occupancy
+  - Action:
+    - Allocate or withhold ventilators
+    - Possibly reallocate from one patient to another under scarcity
+  - Reward:
+    - System-level objective: maximize lives or life-years (with optional fairness constraints)
+  - Algorithm:
+    - Interpretable MDP policy optimization
+    - Tree-structured policies with monotonicity and structural constraints
+- Evaluation strategy:
+  - Simulation experiments comparing learned interpretable policies vs simple benchmark rules (e.g., NYS guidelines, first-come-first-served)
+- Evaluation results (numeric):
+  - Baseline “random exclusion” survival in the overall cohort: 32.7%.
+  - Under a scenario with 180 ventilators, average number of deaths (with 95% CI):
+    - NYS guidelines:
+      - Mean deaths: 582.0
+      - 95% CI: [581.2, 582.9]
+    - FCFS:
+      - Mean deaths: 581.7
+      - 95% CI: [580.5, 582.9]
+    - MDP (SOFA + other covariates):
+      - Mean deaths: 565.6
+      - 95% CI: [565.0, 566.2]
+    - MDP (SOFA + age):
+      - Mean deaths: 565.8
+      - 95% CI: [565.2, 566.5]
+    - MDP (SOFA only):
+      - Mean deaths: 567.7
+      - 95% CI: [567.1, 568.4]
+  - Tree-based interpretable policies closely match the corresponding MDP results, reducing deaths by ≈14–16 compared with NYS/FCFS in this capacity scenario.
+- Limitations:
+  - Simulation-only; no direct bedside evaluation
+  - Ethical and implementation challenges in real-world triage
+  - Focus on allocation, not ventilator parameter control
+
+
+12) Distribution-Free Uncertainty Quantification in Mechanical Ventilation Treatment: A Conformal Deep Q-Learning Framework (ConformalDQN)
+- Authors: Niloufar Eghbali, Tuka Alhanai, Mohammad M. Ghassemi  
+- Year: 2025  
+- ref: eghbali2025distribution
+- Country/Region: USA (Michigan State University, NYU)  
+- Dataset:
+  - MIMIC-IV adult ICU patients on mechanical ventilation
+- Sample size:
+  - 29,270 patients:
+    - 17,562 train
+    - 2,927 validation
+    - 2,927 calibration
+    - 5,854 test
+- Clinical setting & target population:
+  - Adult ICU patients receiving MV in a large academic hospital system
+- RL methods:
+  - State:
+    - Time-windowed vitals, labs, demographics, and ventilator settings
+  - Action:
+    - Discrete ventilator intervention options (combinations of settings)
+  - Reward:
+    - Sparse terminal reward based on 90-day survival
+    - Intermediate rewards for staying within physiologic safety ranges
+  - Algorithm:
+    - ConformalDQN:
+      - Double DQN for value estimation
+      - Conformal prediction layer to generate calibrated uncertainty sets around Q-values / decisions
+- Evaluation strategy:
+  - Compare ConformalDQN vs physician behavior and baseline RL (CQL, vanilla DQN) using:
+    - Off-policy value estimates (expected survival)
+    - Calibration metrics for uncertainty sets (empirical vs nominal coverage)
+- Evaluation results (numeric):
+  - Correlation between Q-value and mortality (Table 1):
+    - ConformalDQN: −0.563 ± 0.003
+    - CQL: −0.429 ± 0.035
+    - DQN: −0.410 ± 0.011
+  - Mean initial-state Q-values and corresponding 90-day survival (Table 2):
+    - Physician policy:
+      - Mean Q: 0.491 ± 0.001
+      - 90-day survival: 74.90%
+    - DeepVent (CQL):
+      - Mean Q: 0.581 ± 0.025
+      - 90-day survival: 81.65%
+    - ConformalDQN:
+      - Mean Q: 0.639 ± 0.026
+      - 90-day survival: 83.89%
+  - Coverage plots show empirical coverage close to nominal (e.g., 90% prediction sets ≈90% empirical coverage).
+- Limitations:
+  - Offline OPE only; no prospective or randomized deployment
+  - Survival improvements remain model-based estimates
+  - Added complexity of conformal layer may hinder real-time clinical use
+
+
+13) IntelliLung: Advancing Safe Mechanical Ventilation Using Offline RL with Hybrid Actions and Clinically Aligned Rewards
+- Authors: Muhammad Hamza Yousuf et al.  
+- Year: 2025  
+- ref: yousuf2025intellilung 
+- Country/Region: Europe (IntelliLung consortium)  
+- Dataset:
+  - MIMIC-IV
+  - eICU
+  - HiRID public ICU datasets
+- Sample size:
+  - Tens of thousands of MV episodes across three databases (exact Ns by dataset reported in paper)
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation
+- RL methods:
+  - State:
+    - Clinician-informed physiologic feature representation combining vitals, labs, ventilator settings, and severity markers
+  - Action:
+    - Hybrid (mixed discrete + continuous) action space:
+      - PEEP, Vt, RR, FiO₂ and related parameters
+  - Reward:
+    - Clinically aligned reward:
+      - Emphasis on ventilator-free days
+      - Staying within physiologic target ranges
+      - Penalizing unsafe or extreme settings
+  - Algorithm:
+    - Offline RL with hybrid-action variants of IQL/EDAC
+    - Safety and action-space constraints informed by clinical rules
+- Evaluation strategy:
+  - Retrospective evaluation on three datasets
+  - Compare IntelliLung policies vs clinician behavior and discrete-action RL baselines using OPE (DistFQE)
+- Evaluation results (numeric):
+  - DistFQE-estimated policy value Vπ and policy coverage dπ (representative table):
+    - Clinician (behavior) policy:
+      - Vπ = −8.83
+      - dπ = – (baseline)
+    - HybridIQL:
+      - Vπ = −6.90
+      - dπ = −0.38
+    - FactoredCQL:
+      - Vπ = −5.42
+      - dπ = −28.53
+    - HybridEDAC:
+      - Vπ = −3.02
+      - dπ = −38.13
+  - All RL policies improve Vπ relative to the clinician policy; HybridEDAC achieves the highest value but also the largest distribution shift (lowest dπ), whereas HybridIQL offers improvement with minimal distribution shift.
+  - Additional figures show higher adherence to physiologic targets and improved ventilator-free–day–aligned rewards vs baselines.
+- Limitations:
+  - Preprint; no prospective validation
+  - Complex hybrid-action algorithms can be challenging to interpret and deploy
+  - Reward heavily depends on expert-specified clinical targets
+
+
+14) Methodology for Interpretable Reinforcement Learning for Optimizing Mechanical Ventilation (CQI)
+- Authors: Joo Seung Lee, Malini Mahendra, Anil Aswani  
+- Year: 2024  
+- ref: lee2024methodology
+- Country/Region: USA  
+- Dataset:
+  - MIMIC-III adult MV events
+- Sample size:
+  - 10,739 mechanical ventilation events
+- Clinical setting & target population:
+  - Adult ICU patients on volume-controlled mechanical ventilation ≥24h
+- RL methods:
+  - State:
+    - 4-hourly vitals, labs, ventilator settings (Vtset, PEEP, FiO₂), sepsis indicators, and other covariates
+  - Action:
+    - 196 possible (Vtset, PEEP, FiO₂) triplets (164 of which are observed)
+  - Reward:
+    - SpO₂-based reward:
+      - Rewards improvements in oxygenation
+      - Penalizes aggressive ventilation (e.g., very high Vt or FiO₂)
+  - Algorithm:
+    - Conservative Q-Improvement (CQI) to learn decision-tree policies
+    - Comparisons against deep CQL and behavior cloning
+- Evaluation strategy:
+  - Train/test split and cross-validation
+  - Off-policy evaluation using:
+    - Weighted importance sampling (WIS)
+    - Fitted Q evaluation (FQE)
+    - Matching-based methods
+- Evaluation results (numeric):
+  - CQI tree policies achieve policy values that are comparable to, and sometimes slightly lower than, deep CQL, but:
+    - Have narrower confidence intervals
+    - Satisfy safety constraints more often (e.g., staying within SpO₂ targets)
+  - CQI consistently outperforms behavior cloning across OPE metrics (higher estimated value, better safety); numeric values are reported per policy in tables (e.g., policy value estimates with bootstrap CIs).
+- Limitations:
+  - Single database (MIMIC-III)
+  - Focused on interpretability methodology rather than a concrete deployed system
+  - No prospective or real-time testing
+
+
+15) Matching-Based Off-Policy Evaluation for Reinforcement Learning Applied to Mechanical Ventilation
+- Authors: Joo Seung Lee, Malini Mahendra, Anil Aswani  
+- Year: 2025  
+- ref: lee2025matching
+- Country/Region: USA  
+- Dataset:
+  - MIMIC-III MV episodes (same core cohort as CQI)
+- Sample size:
+  - ≈10,739 MV events (exact N given in methods)
+- Clinical setting & target population:
+  - Adult ICU patients receiving mechanical ventilation
+- RL methods:
+  - State:
+    - Continuous vitals, labs, ventilator settings including PaO₂/FiO₂, HR, RR, SpO₂, MAP, etc.
+  - Action:
+    - 196 discretized ventilator setting combinations (Vtset, PEEP, FiO₂)
+  - Reward:
+    - SpO₂-based reward used to evaluate existing RL policies (CQL, CQI)
+  - Algorithm:
+    - Matching-based non-parametric OPE:
+      - Nadaraya–Watson kernel transition model
+      - Propensity weighting
+- Evaluation strategy:
+  - Simulation studies plus real-data experiments
+  - Compare matching-based OPE vs WIS and FQE for evaluating RL policies in MV
+- Evaluation results (numeric):
+  - Behavior cloning (BC) quality for propensity modeling:
+    - Random forest BC MAE (test set):
+      - Vt_set: 0.383
+      - PEEP: 0.755
+      - FiO₂: 0.825
+    - Logistic regression propensity model:
+      - Test ROC-AUC: 0.658
+  - In simulations and MIMIC-III experiments:
+    - Matching-based OPE shows lower bias and MSE than WIS and FQE.
+    - Matching-based OPE yields tighter bootstrap confidence intervals and better separation between clearly poor vs better policies (non-overlapping CIs).
+- Limitations:
+  - Methodological focus on OPE; does not propose a new MV policy
+  - Relies on strong ignorability/unconfoundedness assumptions
+  - Still retrospective and model-based; not tied directly to clinical deployment
+
+16) K-CQL: An Arterial Blood Gas Analysis-Based Deep Offline Reinforcement Learning Algorithm for Mechanical Ventilation Treatment
+- Authors: Jiaying Xi, Shaojie Dong, Haoquan Zhou, Yunbo Zhao (and potentially others)
+- Year: 2025 (Forthcoming/Accepted, based on context)
+- ref: xi2025k (Implied BibTeX Key)
+- Country/Region: China (University of Science and Technology of China) 
+- Dataset:
+  - Retrospective ICU data from the MIMIC-III database.
+- Sample size:
+  - Specific number not stated in abstract; derived from the MIMIC-III database.
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation (MV) requiring continuous parameter adjustment due to respiratory failure.
+- RL methods:
+  - State:
+    - Patient physiological status, demographics, current ventilator settings, and the ABG-derived cluster identity (a key innovation integrating expert knowledge).
+  - Action:
+    - Ventilator parameter adjustment actions (increase/decrease/keep) for PEEP (Positive End-Expiratory Pressure) and FiO2 (Fraction of Inspired Oxygen).
+  - Reward:
+    - A multi-component function designed to maximize 90-day survival probability while incorporating intermediate rewards for keeping ABG (Arterial Blood Gas) values (PaO2, PaCO2) within clinically therapeutic targets.
+  - Algorithm:
+    - K-CQL (K-means Clustering combined with Conservative Q-Learning).
+- Evaluation strategy:
+  - Fitted Q Evaluation (FQE) was used to estimate the value of the learned policy versus the observed clinician policy.
+- Evaluation results (numeric):
+  - The expected return of the K-CQL output strategy is estimated to be 1.76 times that of the physicians' strategy observed in the retrospective dataset.
+- Limitations:
+  - Typical for offline RL: reliance on retrospective data (MIMIC-III), and lack of prospective clinical deployment/safety testing.
+
+17) Towards Safe Mechanical Ventilation Treatment Using Deep Offline Reinforcement Learning
+- Authors: Flemming Kondrup, Thomas Jiralerspong, Elaine Lau, Nathan de Lara, Jacob Shkrob, My Duc Tran, Doina Precup, Sumana Basu  
+- Year: 2023  
+- ref: kondrup2023towards
+- Country/Region: Canada (McGill University; Mila)  
+- Dataset:
+  - MIMIC-III ICU database (adult ICU patients)
+- Sample size:
+  - 61,532 ICU stays in MIMIC-III screened
+  - Ventilated cohort extracted as 4-hour time windows over the first 72 hours of mechanical ventilation (exact final N not highlighted in abstract; derived subset of ventilated adults)
+- Clinical setting & target population:
+  - Adult ICU patients on invasive mechanical ventilation during the early phase (first ~72 hours of ventilation)
+- RL methods:
+  - State:
+    - 36-dimensional state including:
+      - Demographics (age, sex, weight, readmission status, Elixhauser comorbidity score)
+      - Severity / composite scores (SOFA, SIRS, GCS)
+      - Vitals (heart rate, blood pressure, shock index, temperature, SpO₂)
+      - Labs (electrolytes, glucose, renal markers, hematologic and coagulation markers, pH, PaCO₂, bicarbonate, base excess)
+      - Fluid balance and support (urine output, vasopressor use, IV fluids, cumulative fluid balance)
+  - Action:
+    - 3 ventilator settings, each discretized into 7 bins → 343 joint actions:
+      - Ideal-body-weight–adjusted tidal volume (Vt)
+      - PEEP
+      - FiO₂
+  - Reward:
+    - Terminal reward:
+      - +1 if 90-day survival
+      - −1 if 90-day mortality
+    - Intermediate reward:
+      - Change in a modified APACHE II–based score (with FiO₂, respiratory rate, hematocrit removed) normalized by possible range, to encourage continuous physiologic improvement and reduce reward sparsity
+  - Algorithm:
+    - Deep offline RL with Conservative Q-Learning (CQL)
+    - Baselines: Double Deep Q-Learning (DDQN), behavior cloning, and physician (behavior) policy
+- Evaluation strategy:
+  - Fitted Q Evaluation (FQE) on held-out data to estimate value (expected return) of:
+    - Physician policy
+    - Behavior cloning
+    - CQL-based DeepVent variants (with and without intermediate reward)
+  - Safety analysis:
+    - Distribution of recommended ventilator settings compared with clinical guideline ranges (e.g., lung-protective Vt and moderate PEEP/FiO₂)
+  - Out-of-distribution (OOD) analysis:
+    - Compare estimated Q-values and action distributions for in-distribution vs OOD patients (extreme physiologic states)
+- Evaluation results (numeric / key findings):
+  - DeepVent (CQL) achieves substantially higher estimated initial-state value (FQE) than:
+    - Physician policy
+    - Behavior cloning
+    - DDQN baseline
+  - The DeepVent policy:
+    - Recommends PEEP mostly in 0–5 cmH₂O and tidal volumes mainly in 5–7.5 mL/kg ideal body weight
+    - Maintains FiO₂ and Vt settings within ranges supported by recent clinical trials and lung-protective guidelines
+  - DDQN:
+    - Shows clear overestimation of Q-values (values above the theoretical maximum return of 1) especially in OOD states
+    - Produces more extreme and guideline-violating settings (e.g., high PEEP)
+  - DeepVent maintains stable Q-value estimates in OOD data and a similar “safe” action distribution as in-distribution data
+- Limitations:
+  - Retrospective, single-database (MIMIC-III) study; results from FQE are estimated, not observed outcomes
+  - Intermediate reward relies on APACHE II–style information and imputation assumptions
+  - Focuses on early ventilation period; does not explicitly model weaning phase or long-term ventilator-free days
+  - No prospective clinical trial or real-time decision support deployment yet
+
+18) Guideline-Informed Reinforcement Learning for Mechanical Ventilation in Critical Care
+- Authors: Floris den Hengst, Martijn Otten, Paul Elbers, Frank van Harmelen, Vincent François-Lavet, Mark Hoogendoorn  
+- Year: 2024 (Artificial Intelligence in Medicine, vol. 147, 102742)  
+- ref: den2024guideline
+- Country/Region: Netherlands (Vrije Universiteit Amsterdam; Amsterdam UMC)
+- Dataset:
+  - MIMIC-III v1.4 intensive care database
+- Sample size:
+  - 61,532 admissions in MIMIC-III screened
+  - 10,597 mechanical ventilation (MV) events from 9,355 unique patients initially extracted (age ≥18, MV ≥24 h, documented 90-day mortality, documented set tidal volume, treatment not withdrawn)
+  - Final analysis cohort (after further filtering and cleaning, Appendix A):
+    - 7,659 patients
+    - 8,799 ventilation events
+- Clinical setting & target population:
+  - Adult ICU patients receiving invasive mechanical ventilation
+  - Goal: learn RL policies for MV that both improve long-term outcomes (90-day mortality) and comply with established lung-protective ventilation guidelines
+- RL methods:
+  - State:
+    - 4-hourly aggregates from 4 h before to 72 h after ventilation onset
+    - Variables largely inherited from Peine et al. VentAI study, including:
+      - Demographics and baseline severity (e.g., SOFA)
+      - Ventilator settings (Vt_set normalized by ideal body weight, PEEP, FiO₂)
+      - Physiologic and lab features relevant to gas exchange and organ function
+  - Action:
+    - Discrete ventilator-setting combinations (similar to VentAI):
+      - Triplets of (Vt_set, PEEP, FiO₂) forming a finite action set
+    - Guideline-informed **action filter**:
+      - Removes actions that violate lung-protective and safety guidelines (e.g., excessively high Vt or FiO₂ for given conditions)
+  - Reward:
+    - Base environment reward:
+      - Same mortality- and oxygenation-driven reward framework as in prior VentAI work (90-day mortality as main long-term outcome)
+    - Guideline-based shaping (second component of framework):
+      - Additional reward based on a state-compliance metric C_S(s), defined as the fraction of guideline clauses satisfied in a state
+      - Used via potential-based reward shaping to encourage guideline-compliant states while preserving optimal policies under the original reward in theory
+  - Algorithm:
+    - Tabular Q-learning for:
+      - Unconstrained policy (baseline)
+      - Guideline-constrained policy using action filter
+      - Guideline-constrained policy + reward shaping
+    - Behavior cloning / imitation learning used for comparison to clinician policy
+- Evaluation strategy:
+  - Study design:
+    - Retrospective RL study on MIMIC-III cohort, following VentAI preprocessing pipeline
+  - Off-policy evaluation:
+    - Fitted Q Evaluation (FQE) with tabular transition model
+    - Compare:
+      - Clinician (behavior) policy
+      - Unconstrained RL policies
+      - Guideline-constrained RL policies (with and without reward shaping)
+  - Metrics:
+    - Expected 90-day mortality under each policy
+    - Degree of guideline compliance:
+      - Fraction of recommended actions that satisfy guideline constraints
+      - Avoidance of extreme settings (e.g., very high Vt or FiO₂)
+- Evaluation results (numeric / key findings):
+  - Guideline-informed RL framework yields:
+    - Policies that **comply with ventilation guidelines** by construction (due to action filter)
+    - Expected 90-day mortality (from model-based FQE) that **improves over clinician policy**
+  - Comparison between compliant and non-compliant RL policies:
+    - Fully guideline-compliant policies:
+      - Slightly higher expected mortality than unconstrained RL policies
+      - But avoid extreme settings and remain within safety bounds, making them more clinically acceptable and interpretable
+    - Non-compliant (unconstrained) RL policies:
+      - Achieve the lowest expected mortality estimates
+      - At the cost of occasionally recommending extreme, guideline-violating settings
+  - Reward shaping:
+    - Adding a guideline-based shaping reward did **not** show clear additional benefit over using the action filter alone
+    - Authors suggest the training data may already encode sufficient signal for good long-term outcomes, or that shaping signal does not strongly help the 90-day mortality objective
+- Limitations:
+  - Single-database (MIMIC-III) retrospective study; generalizability to other hospitals and ventilator practices is unknown
+  - Model-based off-policy evaluation only; no prospective or real-time deployment
+  - Guideline constraints are based on a particular formalization of ventilation guidelines; different interpretations or updated guidelines may require re-specification
+  - Fully guideline-compliant policies may be slightly suboptimal in terms of estimated mortality compared with unconstrained RL policies, raising questions about optimal risk–benefit trade-offs

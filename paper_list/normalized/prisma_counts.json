@@ -1,8 +1,8 @@
 {
-  "identified_raw_total": 152,
-  "after_dedup": 148,
-  "auto_screen_in": 83,
-  "auto_screen_out": 65,
+  "identified_raw_total": 375,
+  "after_dedup": 365,
+  "auto_screen_in": 167,
+  "auto_screen_out": 198,
   "notes": {
     "strict_require_rl": false,
     "mv_terms": [
@@ -36,10 +36,10 @@
     ]
   },
   "abstract_stage": {
-    "checked": 83,
-    "kept": 82,
-    "dropped_by_abstract": 1,
-    "no_abstract": 81
+    "checked": 167,
+    "kept": 162,
+    "dropped_by_abstract": 5,
+    "no_abstract": 160
   },
-  "auto_screen_in_after_abstract": 82
+  "auto_screen_in_after_abstract": 162
 }
